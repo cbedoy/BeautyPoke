@@ -1,4 +1,4 @@
-# BeautyPoke 🎀
+# BeautyPoke
 
 Android application built with **MVVM + Clean Architecture + SOLID** principles.
 
@@ -9,9 +9,10 @@ Android application built with **MVVM + Clean Architecture + SOLID** principles.
 | UI | Jetpack Compose + Material 3 |
 | Architecture | MVVM, Clean Architecture, SOLID, Use Cases |
 | Network | Retrofit + OkHttp |
-| DI | Hilt |
+| DI | Koin |
 | Async | Kotlin Coroutines + Flow |
 | Navigation | Jetpack Navigation Compose |
+| Image Loading | Coil |
 
 ## Architecture Overview
 
@@ -25,7 +26,6 @@ Android application built with **MVVM + Clean Architecture + SOLID** principles.
 ├─────────────────────────────────────────────────┤
 │                    Data                          │
 │  (Retrofit API → DTOs → Repository Impl)        │
-│  (Room DAOs → Entities)                         │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -51,12 +51,14 @@ com.mx.beautypoke
 │   ├── model/          # Domain entities
 │   ├── repository/     # Repository interfaces
 │   └── usecase/        # Business logic
-├── di                  # Hilt modules
+├── di                  # Koin modules
 │   ├── NetworkModule.kt
-│   └── RepositoryModule.kt
+│   ├── RepositoryModule.kt
+│   ├── UseCaseModule.kt
+│   └── ViewModelModule.kt
 └── presentation
     ├── navigation/     # NavHost & routes
-    ├── theme/          # Compose theme
+    ├── theme/          # Compose theme + PokemonTheme palettes
     ├── component/      # Reusable composables
     ├── screen/         # Screen-level composables
     └── viewmodel/      # ViewModels
