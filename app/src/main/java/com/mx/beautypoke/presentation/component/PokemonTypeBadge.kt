@@ -1,10 +1,15 @@
 package com.mx.beautypoke.presentation.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -35,21 +40,52 @@ fun PokemonType.resolveColor(): PokemonColor = when (this) {
     PokemonType.FAIRY -> PokemonColor.PINK
 }
 
+enum class PokemonTypeBadgeStyle {
+    ROUNDED, CIRCULAR
+}
+
 @Composable
 fun PokemonTypeBadge(
     type: PokemonType,
     modifier: Modifier = Modifier,
+    style: PokemonTypeBadgeStyle = PokemonTypeBadgeStyle.ROUNDED,
     containerColor: Color = Color(type.resolveColor().hex).copy(alpha = 0.2f),
     contentColor: Color = Color(type.resolveColor().hex)
 ) {
-    Text(
-        text = type.displayName,
-        color = contentColor,
-        fontSize = 12.sp,
-        fontWeight = FontWeight.SemiBold,
-        modifier = modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(containerColor)
-            .padding(horizontal = 16.dp, vertical = 6.dp)
-    )
+    when (style) {
+        PokemonTypeBadgeStyle.ROUNDED -> {
+            Text(
+                text = type.displayName,
+                color = contentColor,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(containerColor)
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+            )
+        }
+        PokemonTypeBadgeStyle.CIRCULAR -> {
+            Row(
+                modifier = modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(containerColor)
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(contentColor)
+                )
+                Text(
+                    text = "  ${type.displayName}",
+                    color = contentColor,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+        }
+    }
 }

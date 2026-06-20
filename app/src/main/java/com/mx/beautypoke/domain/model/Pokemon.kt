@@ -9,7 +9,8 @@ data class Pokemon(
     val height: Int,
     val weight: Int,
     val description: String,
-    val color: PokemonColor
+    val color: PokemonColor,
+    val category: String
 )
 
 data class PokemonStat(
@@ -20,23 +21,23 @@ data class PokemonStat(
 
 enum class PokemonType(val displayName: String) {
     NORMAL("Normal"),
-    FIRE("Fuego"),
-    WATER("Agua"),
-    ELECTRIC("Eléctrico"),
-    GRASS("Planta"),
-    ICE("Hielo"),
-    FIGHTING("Lucha"),
-    POISON("Veneno"),
-    GROUND("Tierra"),
-    FLYING("Volador"),
-    PSYCHIC("Psíquico"),
-    BUG("Bicho"),
-    ROCK("Roca"),
-    GHOST("Fantasma"),
-    DRAGON("Dragón"),
-    DARK("Siniestro"),
-    STEEL("Acero"),
-    FAIRY("Hada")
+    FIRE("Fire"),
+    WATER("Water"),
+    ELECTRIC("Electric"),
+    GRASS("Grass"),
+    ICE("Ice"),
+    FIGHTING("Fighting"),
+    POISON("Poison"),
+    GROUND("Ground"),
+    FLYING("Flying"),
+    PSYCHIC("Psychic"),
+    BUG("Bug"),
+    ROCK("Rock"),
+    GHOST("Ghost"),
+    DRAGON("Dragon"),
+    DARK("Dark"),
+    STEEL("Steel"),
+    FAIRY("Fairy")
 }
 
 enum class PokemonColor(val hex: Long) {

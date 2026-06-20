@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,27 +13,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.MonitorWeight
+import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -48,19 +45,25 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.mx.beautypoke.domain.model.Pokemon
 import com.mx.beautypoke.domain.model.PokemonDetailUiState
-import com.mx.beautypoke.presentation.component.AboutSection
-import com.mx.beautypoke.presentation.component.BaseStatsSection
+import com.mx.beautypoke.domain.model.PokemonType
+import com.mx.beautypoke.domain.model.TypeWeaknesses
+import com.mx.beautypoke.presentation.component.AbstractPattern
+import com.mx.beautypoke.presentation.component.InfoSection
+import com.mx.beautypoke.presentation.component.MetricItem
 import com.mx.beautypoke.presentation.component.PokemonTypeBadge
+import com.mx.beautypoke.presentation.component.PokemonTypeBadgeStyle
+import com.mx.beautypoke.presentation.component.StatBar
+import com.mx.beautypoke.presentation.component.WeaknessPill
+import com.mx.beautypoke.presentation.theme.PokemonTheme
+import com.mx.beautypoke.presentation.theme.toTheme
 import com.mx.beautypoke.presentation.viewmodel.PokemonDetailViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PokemonDetailScreen(
     viewModel: PokemonDetailViewModel,
     onBackClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val selectedTab by viewModel.selectedTab.collectAsState()
 
     when (val state = uiState) {
         is PokemonDetailUiState.Loading -> LoadingScreen()
@@ -68,88 +71,113 @@ fun PokemonDetailScreen(
             message = state.message,
             onRetry = viewModel::onRetry
         )
-        is PokemonDetailUiState.Success -> PokemonDetailContent(
+        is PokemonDetailUiState.Success -> PokemonDetailCard(
             pokemon = state.pokemon,
-            selectedTab = selectedTab,
-            onTabSelected = viewModel::onTabSelected,
             onBackClick = onBackClick
         )
     }
 }
 
 @Composable
-private fun PokemonDetailContent(
+private fun PokemonDetailCard(
     pokemon: Pokemon,
-    selectedTab: Int,
-    onTabSelected: (Int) -> Unit,
     onBackClick: () -> Unit
 ) {
-    val bgColor = Color(pokemon.color.hex)
-    val tabs = listOf("Acerca de", "Estadísticas Base")
+    val primaryType = pokemon.types.firstOrNull() ?: PokemonType.NORMAL
+    val theme: PokemonTheme = primaryType.toTheme()
 
-    Scaffold(
-        containerColor = Color.White
-    ) { padding ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(theme.surface)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
                 .verticalScroll(rememberScrollState())
         ) {
-            HeroSection(
-                pokemon = pokemon,
-                bgColor = bgColor,
-                onBackClick = onBackClick
+            TopSection(pokemon = pokemon, theme = theme, primaryType = primaryType)
+
+            CurvedNameTransition(pokemon = pokemon, theme = theme)
+
+            InfoPanel(pokemon = pokemon, theme = theme, primaryType = primaryType)
+        }
+
+        BackButton(onClick = onBackClick, theme = theme)
+    }
+}
+
+@Composable
+private fun TopSection(
+    pokemon: Pokemon,
+    theme: PokemonTheme,
+    primaryType: PokemonType
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(320.dp)
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        theme.primary,
+                        theme.primary.copy(alpha = 0.7f),
+                        theme.secondary
+                    )
+                )
             )
+    ) {
+        AbstractPattern(
+            type = primaryType,
+            modifier = Modifier.fillMaxSize()
+        )
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "#${pokemon.id.toString().padStart(3, '0')}",
+                fontSize = 100.sp,
+                fontWeight = FontWeight.Black,
+                color = Color.White.copy(alpha = 0.1f)
+            )
+        }
 
-            TabRow(
-                selectedTabIndex = selectedTab,
-                containerColor = Color.White,
-                contentColor = bgColor,
-                indicator = { tabPositions ->
-                    SecondaryIndicator(
-                        modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                        height = 3.dp,
-                        color = bgColor
-                    )
-                },
-                divider = {}
-            ) {
-                tabs.forEachIndexed { index, title ->
-                    Tab(
-                        selected = selectedTab == index,
-                        onClick = { onTabSelected(index) },
-                        text = {
-                            Text(
-                                text = title,
-                                fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal,
-                                color = if (selectedTab == index) bgColor else Color(0xFF999999),
-                                fontSize = 14.sp
-                            )
-                        }
-                    )
-                }
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            AsyncImage(
+                model = pokemon.imageUrl,
+                contentDescription = pokemon.name,
+                modifier = Modifier
+                    .size(220.dp),
+                contentScale = ContentScale.Fit
+            )
+        }
+
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(end = 16.dp, top = 80.dp)
+        ) {
+            pokemon.types.forEach { type ->
+                PokemonTypeBadge(
+                    type = type,
+                    style = PokemonTypeBadgeStyle.CIRCULAR,
+                    containerColor = Color.White.copy(alpha = 0.25f),
+                    contentColor = Color.White
+                )
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            when (selectedTab) {
-                0 -> AboutSection(pokemon = pokemon)
-                1 -> BaseStatsSection(pokemon = pokemon)
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
 
 @Composable
-private fun HeroSection(
+private fun CurvedNameTransition(
     pokemon: Pokemon,
-    bgColor: Color,
-    onBackClick: () -> Unit
+    theme: PokemonTheme
 ) {
     Box(
         modifier = Modifier
@@ -157,75 +185,183 @@ private fun HeroSection(
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        bgColor.copy(alpha = 0.9f),
-                        bgColor.copy(alpha = 0.6f),
-                        Color.White
-                    )
+                        theme.secondary,
+                        theme.surface
+                    ),
+                    startY = 0f,
+                    endY = 120f
                 )
             )
+            .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(top = 8.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom
         ) {
-            IconButton(
-                onClick = onBackClick,
-                modifier = Modifier.padding(start = 8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.ArrowBack,
-                    contentDescription = "Regresar",
-                    tint = Color.White
-                )
-            }
-
             Text(
                 text = pokemon.name,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
-                modifier = Modifier.padding(start = 24.dp)
+                color = Color.White
             )
+            Text(
+                text = "N°${pokemon.id.toString().padStart(3, '0')}",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White.copy(alpha = 0.7f)
+            )
+        }
+    }
+}
 
+@Composable
+private fun InfoPanel(
+    pokemon: Pokemon,
+    theme: PokemonTheme,
+    primaryType: PokemonType
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(theme.surface)
+            .padding(horizontal = 24.dp)
+            .padding(top = 16.dp, bottom = 32.dp)
+    ) {
+        InfoSection(title = "DESCRIPTION", onSurfaceColor = theme.onSurface) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = pokemon.description,
+                fontSize = 13.sp,
+                lineHeight = 20.sp,
+                color = theme.onSurface.copy(alpha = 0.8f)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+        HorizontalDivider(color = theme.onSurface.copy(alpha = 0.1f))
+        Spacer(modifier = Modifier.height(20.dp))
+
+        InfoSection(title = "BASE STATS", onSurfaceColor = theme.onSurface) {
+            pokemon.stats.forEach { stat ->
+                StatBar(
+                    stat = stat,
+                    barColor = theme.primary,
+                    onSurfaceColor = theme.onSurface
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+        HorizontalDivider(color = theme.onSurface.copy(alpha = 0.1f))
+        Spacer(modifier = Modifier.height(20.dp))
+
+        InfoSection(title = "TYPE & CATEGORY", onSurfaceColor = theme.onSurface) {
             Row(
-                modifier = Modifier.padding(start = 24.dp, top = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 pokemon.types.forEach { type ->
                     PokemonTypeBadge(
                         type = type,
-                        containerColor = Color.White.copy(alpha = 0.25f),
-                        contentColor = Color.White
+                        style = PokemonTypeBadgeStyle.CIRCULAR,
+                        containerColor = theme.primary.copy(alpha = 0.2f),
+                        contentColor = theme.primary
                     )
+                    Spacer(modifier = Modifier.width(8.dp))
                 }
-            }
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp),
-                contentAlignment = Alignment.Center
-            ) {
+                Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "#${pokemon.id.toString().padStart(3, '0')}",
-                    fontSize = 80.sp,
-                    fontWeight = FontWeight.Black,
-                    color = Color.White.copy(alpha = 0.15f),
-                    modifier = Modifier.align(Alignment.Center)
-                )
-
-                AsyncImage(
-                    model = pokemon.imageUrl,
-                    contentDescription = pokemon.name,
-                    modifier = Modifier
-                        .size(200.dp)
-                        .align(Alignment.Center),
-                    contentScale = ContentScale.Fit
+                    text = pokemon.category,
+                    fontSize = 13.sp,
+                    color = theme.onSurface.copy(alpha = 0.7f)
                 )
             }
         }
+
+        Spacer(modifier = Modifier.height(20.dp))
+        HorizontalDivider(color = theme.onSurface.copy(alpha = 0.1f))
+        Spacer(modifier = Modifier.height(20.dp))
+
+        InfoSection(title = "WEAKNESSES", onSurfaceColor = theme.onSurface) {
+            WeaknessRow(pokemon = pokemon, theme = theme)
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+        HorizontalDivider(color = theme.onSurface.copy(alpha = 0.1f))
+        Spacer(modifier = Modifier.height(20.dp))
+
+        InfoSection(title = "WEIGHT & HEIGHT", onSurfaceColor = theme.onSurface) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(32.dp)
+            ) {
+                MetricItem(
+                    icon = Icons.Filled.MonitorWeight,
+                    label = "Weight",
+                    value = "${pokemon.weight / 10.0} kg",
+                    onSurfaceColor = theme.onSurface
+                )
+                MetricItem(
+                    icon = Icons.Filled.Straighten,
+                    label = "Height",
+                    value = "${pokemon.height / 10.0} m",
+                    onSurfaceColor = theme.onSurface
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun WeaknessRow(
+    pokemon: Pokemon,
+    theme: PokemonTheme
+) {
+    val weaknesses = pokemon.types
+        .flatMap { TypeWeaknesses.weaknessesOf(it) }
+        .distinct()
+        .filter { it !in pokemon.types }
+
+    if (weaknesses.isEmpty()) {
+        Text(
+            text = "No weaknesses",
+            fontSize = 13.sp,
+            color = theme.onSurface.copy(alpha = 0.5f)
+        )
+    } else {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            weaknesses.forEach { type ->
+                WeaknessPill(
+                    type = type,
+                    containerColor = theme.primary.copy(alpha = 0.15f),
+                    contentColor = theme.primary.copy(alpha = 0.8f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BackButton(
+    onClick: () -> Unit,
+    theme: PokemonTheme
+) {
+    IconButton(
+        onClick = onClick,
+        modifier = Modifier
+            .padding(start = 12.dp, top = 48.dp)
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(theme.onSurface.copy(alpha = 0.15f))
+    ) {
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = "Back",
+            tint = theme.onSurface
+        )
     }
 }
 
@@ -262,7 +398,7 @@ private fun ErrorScreen(
             onClick = onRetry,
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF74CB48))
         ) {
-            Text("Reintentar")
+            Text("Retry")
         }
     }
 }

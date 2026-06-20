@@ -3,9 +3,7 @@ package com.mx.beautypoke.presentation.component
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,7 +21,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mx.beautypoke.domain.model.PokemonColor
 import com.mx.beautypoke.domain.model.PokemonStat
 
 @Composable
@@ -31,6 +28,7 @@ fun StatBar(
     stat: PokemonStat,
     barColor: Color,
     modifier: Modifier = Modifier,
+    onSurfaceColor: Color = Color(0xFFE8DCF0),
     animated: Boolean = true
 ) {
     val progress by animateFloatAsState(
@@ -47,34 +45,34 @@ fun StatBar(
     ) {
         Text(
             text = stat.name,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color(0xFF666666),
-            modifier = Modifier.width(80.dp)
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = onSurfaceColor.copy(alpha = 0.6f),
+            modifier = Modifier.width(56.dp)
         )
 
         Text(
             text = "${stat.value}",
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF333333),
+            color = onSurfaceColor,
             textAlign = TextAlign.End,
-            modifier = Modifier.width(36.dp)
+            modifier = Modifier.width(32.dp)
         )
 
         Box(
             modifier = Modifier
                 .padding(start = 8.dp)
                 .weight(1f)
-                .height(6.dp)
-                .clip(RoundedCornerShape(3.dp))
-                .background(Color(0xFFE0E0E0))
+                .height(4.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(onSurfaceColor.copy(alpha = 0.15f))
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth(progress)
-                    .height(6.dp)
-                    .clip(RoundedCornerShape(3.dp))
+                    .height(4.dp)
+                    .clip(RoundedCornerShape(2.dp))
                     .background(barColor)
             )
         }

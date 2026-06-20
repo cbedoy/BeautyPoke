@@ -20,7 +20,8 @@ object PokemonMapper {
             height = pokemon.height,
             weight = pokemon.weight,
             description = extractDescription(species),
-            color = mapColor(species.color.name)
+            color = mapColor(species.color.name),
+            category = extractCategory(species)
         )
     }
 
@@ -50,14 +51,20 @@ object PokemonMapper {
     private fun mapStat(statValue: Int, statName: String): PokemonStat {
         val displayName = when (statName) {
             "hp" -> "HP"
-            "attack" -> "Ataque"
-            "defense" -> "Defensa"
-            "special-attack" -> "Ataque Esp."
-            "special-defense" -> "Defensa Esp."
-            "speed" -> "Velocidad"
+            "attack" -> "Attack"
+            "defense" -> "Defense"
+            "special-attack" -> "Sp. Atk"
+            "special-defense" -> "Sp. Def"
+            "speed" -> "Speed"
             else -> statName.replaceFirstChar { it.uppercase() }
         }
         return PokemonStat(name = displayName, value = statValue, maxValue = 255)
+    }
+
+    private fun extractCategory(species: PokemonSpeciesResponse): String {
+        return species.genera
+            .find { it.language.name == "en" }
+            ?.genus ?: "Unknown"
     }
 
     private fun mapColor(colorName: String): PokemonColor {

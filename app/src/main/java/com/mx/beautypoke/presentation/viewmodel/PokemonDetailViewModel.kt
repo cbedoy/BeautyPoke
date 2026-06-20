@@ -16,15 +16,8 @@ class PokemonDetailViewModel(
     private val _uiState = MutableStateFlow<PokemonDetailUiState>(PokemonDetailUiState.Loading)
     val uiState: StateFlow<PokemonDetailUiState> = _uiState.asStateFlow()
 
-    private val _selectedTab = MutableStateFlow(0)
-    val selectedTab: StateFlow<Int> = _selectedTab.asStateFlow()
-
     init {
         loadPokemonDetail()
-    }
-
-    fun onTabSelected(index: Int) {
-        _selectedTab.value = index
     }
 
     fun onRetry() {
@@ -38,7 +31,7 @@ class PokemonDetailViewModel(
             val result = getPokemonDetailUseCase(6)
             _uiState.value = result.fold(
                 onSuccess = { PokemonDetailUiState.Success(it) },
-                onFailure = { PokemonDetailUiState.Error(it.message ?: "Error desconocido") }
+                onFailure = { PokemonDetailUiState.Error(it.message ?: "Unknown error") }
             )
         }
     }
