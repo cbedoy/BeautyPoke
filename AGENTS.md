@@ -88,6 +88,12 @@ data class SomethingUiState(
 - Reusable components in `presentation/component/`.
 - Theme (colors, typography, shapes) in `presentation/theme/`.
 - Navigation graph in `presentation/navigation/BeautyPokeNavHost.kt`.
+- **State hoisting**: ViewModel owns the state (`StateFlow`), screen composables receive state + event callbacks as parameters. No `remember` or `mutableStateOf` for business data in composables.
+- **UiState** is a `sealed interface` with `Loading`, `Success`, `Error` variants defined in `domain/model/`.
+- **Domain models** (`domain/model/`) are pure Kotlin data classes with no Android dependencies.
+- **Image loading**: Use Coil's `AsyncImage` for remote images.
+- **Pokemon types**: Mapped via `PokemonType` enum with a `color()` extension that resolves to `PokemonColor` for consistent theming.
+- **Measurements**: Height in decimeters → meters (`/ 10.0`), weight in hectograms → kilograms (`/ 10.0`).
 
 ## 8. Dependency Injection (Hilt)
 
