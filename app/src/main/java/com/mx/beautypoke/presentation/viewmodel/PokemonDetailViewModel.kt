@@ -2,18 +2,19 @@ package com.mx.beautypoke.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mx.beautypoke.domain.model.Pokemon
-import com.mx.beautypoke.domain.model.PokemonColor
+import com.mx.beautypoke.data.repository.PokemonRepositoryImpl
 import com.mx.beautypoke.domain.model.PokemonDetailUiState
-import com.mx.beautypoke.domain.model.PokemonStat
-import com.mx.beautypoke.domain.model.PokemonType
-import kotlinx.coroutines.delay
+import com.mx.beautypoke.domain.usecase.GetPokemonDetailUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class PokemonDetailViewModel : ViewModel() {
+
+    private val getPokemonDetailUseCase = GetPokemonDetailUseCase(
+        repository = PokemonRepositoryImpl()
+    )
 
     private val _uiState = MutableStateFlow<PokemonDetailUiState>(PokemonDetailUiState.Loading)
     val uiState: StateFlow<PokemonDetailUiState> = _uiState.asStateFlow()
@@ -36,26 +37,11 @@ class PokemonDetailViewModel : ViewModel() {
 
     private fun loadPokemonDetail() {
         viewModelScope.launch {
-            delay(800)
-            _uiState.value = PokemonDetailUiState.Success(
-                Pokemon(
-                    id = 6,
-                    name = "Charizard",
-                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png",
-                    types = listOf(PokemonType.FIRE, PokemonType.FLYING),
-                    stats = listOf(
-                        PokemonStat("HP", 78),
-                        PokemonStat("Ataque", 84),
-                        PokemonStat("Defensa", 78),
-                        PokemonStat("Ataque Esp.", 109),
-                        PokemonStat("Defensa Esp.", 85),
-                        PokemonStat("Velocidad", 100)
-                    ),
-                    height = 17,
-                    weight = 905,
-                    description = "Escupe un fuego tan caliente que funde las rocas. Causa incendios forestales sin querer.",
-                    color = PokemonColor.RED
-                )
+            _uiState.value = PokemonDetailUiState.Loading
+            val result = getPokemonDetailUseCase(6)
+            _uiState.value = result.fold(
+                onSuccess = { PokemonDetailUiState.Success(it) },
+                onFailure = { PokemonDetailUiState.Error(it.message ?: "Error desconocido") }
             )
         }
     }
