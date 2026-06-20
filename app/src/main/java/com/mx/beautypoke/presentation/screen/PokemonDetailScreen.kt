@@ -1,5 +1,6 @@
 package com.mx.beautypoke.presentation.screen
 
+import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,6 +15,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,6 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -37,14 +41,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.lerp
 import coil.compose.AsyncImage
 import com.mx.beautypoke.domain.model.Pokemon
-import com.mx.beautypoke.domain.model.PokemonDetailUiState
+import com.mx.beautypoke.domain.model.PokemonCarouselUiState
 import com.mx.beautypoke.domain.model.PokemonType
 import com.mx.beautypoke.domain.model.TypeWeaknesses
 import com.mx.beautypoke.presentation.component.AbstractPattern
@@ -57,6 +63,7 @@ import com.mx.beautypoke.presentation.component.WeaknessPill
 import com.mx.beautypoke.presentation.theme.PokemonTheme
 import com.mx.beautypoke.presentation.theme.toTheme
 import com.mx.beautypoke.presentation.viewmodel.PokemonDetailViewModel
+import kotlin.math.abs
 
 @Composable
 fun PokemonDetailScreen(
@@ -66,22 +73,112 @@ fun PokemonDetailScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     when (val state = uiState) {
-        is PokemonDetailUiState.Loading -> LoadingScreen()
-        is PokemonDetailUiState.Error -> ErrorScreen(
+        is PokemonCarouselUiState.Loading -> LoadingScreen()
+        is PokemonCarouselUiState.Error -> ErrorScreen(
             message = state.message,
             onRetry = viewModel::onRetry
         )
-        is PokemonDetailUiState.Success -> PokemonDetailCard(
-            pokemon = state.pokemon,
+        is PokemonCarouselUiState.Success -> PokemonCarousel(
+            pokemonList = state.pokemonList,
+            currentIndex = state.currentIndex,
+            onPageSelected = viewModel::onPageSelected,
             onBackClick = onBackClick
         )
     }
 }
 
 @Composable
-private fun PokemonDetailCard(
-    pokemon: Pokemon,
+private fun PokemonCarousel(
+    pokemonList: List<Pokemon>,
+    currentIndex: Int,
+    onPageSelected: (Int) -> Unit,
     onBackClick: () -> Unit
+) {
+    val pagerState = rememberPagerState(
+        initialPage = currentIndex,
+        pageCount = { pokemonList.size }
+    )
+
+    val primaryType = pokemonList.getOrNull(pagerState.currentPage)?.types?.firstOrNull()
+        ?: PokemonType.NORMAL
+    val theme: PokemonTheme = primaryType.toTheme()
+
+    LaunchedEffect(pagerState.currentPage) {
+        onPageSelected(pagerState.currentPage)
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(theme.surface)
+    ) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize()
+        ) { page ->
+            val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+            val scale = lerp(0.85f, 1f, 1f - abs(pageOffset))
+            val alpha = lerp(0.3f, 1f, 1f - abs(pageOffset))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        scaleX = scale
+                        scaleY = scale
+                        this.alpha = alpha
+                    }
+            ) {
+                PokemonDetailCard(pokemon = pokemonList[page])
+            }
+        }
+
+        BackButton(onClick = onBackClick, theme = theme)
+
+        PageIndicator(
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp),
+            pageCount = pokemonList.size,
+            currentPage = pagerState.currentPage,
+            activeColor = theme.primary,
+            inactiveColor = theme.onSurface
+        )
+    }
+}
+
+@Composable
+private fun PageIndicator(
+    modifier: Modifier = Modifier,
+    pageCount: Int,
+    currentPage: Int,
+    activeColor: Color,
+    inactiveColor: Color
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        repeat(pageCount) { index ->
+            val isActive = index == currentPage
+            val size by animateIntAsState(
+                targetValue = if (isActive) 10 else 6,
+                label = "dotSize"
+            )
+            Box(
+                modifier = Modifier
+                    .size(size.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isActive) activeColor
+                        else inactiveColor.copy(alpha = 0.3f)
+                    )
+            )
+        }
+    }
+}
+
+@Composable
+fun PokemonDetailCard(
+    pokemon: Pokemon
 ) {
     val primaryType = pokemon.types.firstOrNull() ?: PokemonType.NORMAL
     val theme: PokemonTheme = primaryType.toTheme()
@@ -102,8 +199,6 @@ private fun PokemonDetailCard(
 
             InfoPanel(pokemon = pokemon, theme = theme, primaryType = primaryType)
         }
-
-        BackButton(onClick = onBackClick, theme = theme)
     }
 }
 
@@ -151,8 +246,7 @@ private fun TopSection(
             AsyncImage(
                 model = pokemon.imageUrl,
                 contentDescription = pokemon.name,
-                modifier = Modifier
-                    .size(220.dp),
+                modifier = Modifier.size(220.dp),
                 contentScale = ContentScale.Fit
             )
         }
