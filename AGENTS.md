@@ -51,14 +51,38 @@ com.mx.beautypoke
 - Interface Segregation: small focused interfaces.
 - Dependency Inversion: domain defines repository contracts, data implements them.
 
-## 4. Network Layer (Retrofit)
+## 4. API — PokéAPI v2
 
-- Define API interfaces in `data/remote`.
-- Use `Result<T>` wrapper or sealed class for API call outcomes.
-- Retrofit instance created in DI module; base URL and interceptors configured there.
-- DTOs in `data/remote/dto/`, mapped to domain models via mappers in `data/remote/mapper/`.
+- **Base URL:** `https://pokeapi.co/api/v2/`
+- **No authentication required** — free and open, no rate limiting.
+- **Endpoints used:**
+  - `GET /pokemon/{id}` — id, name, types, stats, height, weight, sprites
+  - `GET /pokemon-species/{id}` — color, flavor text, evolution chain
 
-## 5. Use Cases
+## 5. Network Layer (Retrofit)
+
+- API interfaces defined in `data/remote/api/`.
+- DTOs in `data/remote/dto/` with `@SerializedName` for snake_case mapping.
+- Retrofit instance: standalone `RetrofitClient` singleton in `data/remote/` (no DI framework yet).
+- DTO → Domain mapping via `PokemonMapper` in `data/remote/mapper/`.
+- Use `runCatching { }` in repository for error handling → `Result<T>`.
+- `OkHttpClient` with 15s connect/read timeouts.
+- Gson for JSON deserialization.
+
+### Mapping rules
+| Domain field | API source | Notes |
+|---|---|---|
+| `id` | `pokemon.id` | |
+| `name` | `pokemon.name` | First letter capitalized |
+| `imageUrl` | `sprites.other.official-artwork.front_default` | Falls back to PokeAPI raw URL |
+| `types` | `types[].type.name` | Mapped to `PokemonType` enum |
+| `stats` | `stats[].base_stat` + `stats[].stat.name` | 3-letter stat names mapped to Spanish display names |
+| `height` | `pokemon.height` | Decimeters |
+| `weight` | `pokemon.weight` | Hectograms |
+| `description` | `species.flavor_text_entries` | Prefers English "sword" version; cleans `\f` characters |
+| `color` | `species.color.name` | Mapped to `PokemonColor` enum |
+
+## 6. Use Cases
 
 Each use case is a single-purpose class with an `operator fun invoke(...)`:
 
@@ -68,7 +92,7 @@ class GetSomethingUseCase(private val repository: SomethingRepository) {
 }
 ```
 
-## 6. ViewModel Conventions
+## 7. ViewModel Conventions
 
 - One ViewModel per screen or feature group.
 - Expose `StateFlow<UiState<T>>` where `UiState` is a sealed interface with `Loading`, `Success`, `Error`.
@@ -82,7 +106,7 @@ data class SomethingUiState(
 )
 ```
 
-## 7. Compose UI
+## 8. Compose UI
 
 - Screens in `presentation/screen/`.
 - Reusable components in `presentation/component/`.
@@ -95,20 +119,20 @@ data class SomethingUiState(
 - **Pokemon types**: Mapped via `PokemonType` enum with a `color()` extension that resolves to `PokemonColor` for consistent theming.
 - **Measurements**: Height in decimeters → meters (`/ 10.0`), weight in hectograms → kilograms (`/ 10.0`).
 
-## 8. Dependency Injection (Hilt)
+## 9. Dependency Injection (Hilt)
 
 A DI module per layer is preferred:
 - `NetworkModule` — Retrofit, OkHttp
 - `RepositoryModule` — binds interfaces to implementations
 - `UseCaseModule` / `UseCaseProvider` — wires repository → use case
 
-## 9. Testing
+## 10. Testing
 
 - `domain/` — pure unit tests (JUnit + MockK or Turbine for flows).
 - `data/` — unit tests with mocked Retrofit (MockWebServer).
 - `presentation/` — ViewModel tests with fake use cases; Compose UI tests.
 
-## 10. Build & Run
+## 11. Build & Run
 
 ```bash
 ./gradlew assembleDebug
@@ -116,14 +140,14 @@ A DI module per layer is preferred:
 ./gradlew connectedCheck
 ```
 
-## 11. Commands
+## 12. Commands
 
 - `install`: `./gradlew installDebug`
 - `lint`: `./gradlew lint`
 - `test`: `./gradlew test`
 - `run`: Open project in Android Studio and run the `app` configuration.
 
-## 12. Git Workflow
+## 13. Git Workflow
 
 - Feature branches off `develop` or `main`.
 - Conventional commits: `feat:`, `fix:`, `refactor:`, `test:`, `docs:`.
