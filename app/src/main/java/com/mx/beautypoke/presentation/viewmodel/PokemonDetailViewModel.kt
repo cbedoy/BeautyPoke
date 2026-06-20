@@ -2,7 +2,6 @@ package com.mx.beautypoke.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mx.beautypoke.data.repository.PokemonRepositoryImpl
 import com.mx.beautypoke.domain.model.PokemonDetailUiState
 import com.mx.beautypoke.domain.usecase.GetPokemonDetailUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,11 +9,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class PokemonDetailViewModel : ViewModel() {
-
-    private val getPokemonDetailUseCase = GetPokemonDetailUseCase(
-        repository = PokemonRepositoryImpl()
-    )
+class PokemonDetailViewModel(
+    private val getPokemonDetailUseCase: GetPokemonDetailUseCase
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<PokemonDetailUiState>(PokemonDetailUiState.Loading)
     val uiState: StateFlow<PokemonDetailUiState> = _uiState.asStateFlow()
