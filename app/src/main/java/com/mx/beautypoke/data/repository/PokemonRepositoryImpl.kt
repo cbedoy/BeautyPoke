@@ -1,13 +1,14 @@
 package com.mx.beautypoke.data.repository
 
-import com.mx.beautypoke.data.remote.RetrofitClient
+import com.mx.beautypoke.data.remote.api.PokemonApiService
 import com.mx.beautypoke.data.remote.mapper.PokemonMapper
 import com.mx.beautypoke.domain.model.Pokemon
 import com.mx.beautypoke.domain.repository.PokemonRepository
 
-class PokemonRepositoryImpl : PokemonRepository {
+class PokemonRepositoryImpl(
+    private val api: PokemonApiService
+) : PokemonRepository {
 
-    private val api = RetrofitClient.apiService
     private val mapper = PokemonMapper
 
     override suspend fun getPokemonDetail(id: Int): Result<Pokemon> {
