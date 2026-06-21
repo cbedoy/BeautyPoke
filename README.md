@@ -17,16 +17,77 @@ Android application built with **MVVM + Clean Architecture + SOLID** principles.
 ## Architecture Overview
 
 ```
-┌─────────────────────────────────────────────────┐
-│                  Presentation                    │
-│  (Compose UI → ViewModel → UiState Flow)        │
-├─────────────────────────────────────────────────┤
-│                   Domain                         │
-│  (Use Cases → Repository Interfaces → Models)   │
-├─────────────────────────────────────────────────┤
-│                    Data                          │
-│  (Retrofit API → DTOs → Repository Impl)        │
-└─────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                        PRESENTATION LAYER                        │
+│                                                                  │
+│  ┌──────────────┐    ┌──────────────────┐    ┌────────────────┐ │
+│  │  Compose UI   │───>│   ViewModel      │───>│   UiState      │ │
+│  │  (Screen/     │    │  (StateFlow)     │    │  (Sealed       │ │
+│  │   Component)  │<───│                  │<───│   Interface)   │ │
+│  └──────────────┘    └────────┬─────────┘    └────────────────┘ │
+│                               │                                  │
+├───────────────────────────────┼──────────────────────────────────┤
+│                        DOMAIN LAYER                              │
+│                               │                                  │
+│                     ┌─────────▼─────────┐                       │
+│                     │    Use Case       │                        │
+│                     │  (single invoke)  │                        │
+│                     └─────────┬─────────┘                       │
+│                               │                                  │
+│                     ┌─────────▼─────────┐                       │
+│                     │   Repository      │                        │
+│                     │   Interface       │                        │
+│                     └─────────┬─────────┘                       │
+│                               │                                  │
+├───────────────────────────────┼──────────────────────────────────┤
+│                        DATA LAYER                                │
+│                               │                                  │
+│              ┌────────────────┼────────────────┐                 │
+│              │                │                │                 │
+│    ┌─────────▼─────────┐  ┌──▼──────────┐  ┌──▼──────────┐     │
+│    │  Remote (Retrofit) │  │   Local     │  │  Mapper     │     │
+│    │  API Service      │  │   (Room)    │  │  DTO↔Entity │     │
+│    │  DTOs             │  │   DAO       │  │  ↔Domain    │     │
+│    └───────────────────┘  │   Entity    │  └─────────────┘     │
+│                           └─────────────┘                      │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### Data flow
+
+```
+User scrolls pager
+       │
+       ▼
+onPageSelected(index) ──> ViewModel
+                              │
+                              ▼
+                    GetPokemonRangeUseCase
+                              │
+                              ▼
+                    PokemonRepositoryImpl
+                          │        │
+                          ▼        ▼
+                    Room (cache)  API (Retrofit)
+                          │        │
+                          └──┬─────┘
+                             ▼
+                    Return Result<Pokemon>
+                             │
+                             ▼
+                    ViewModel updates StateFlow
+                             │
+                             ▼
+                    Compose UI re-renders
+```
+
+### Dependency direction
+
+```
+Presentation ──> Domain <── Data
+                      │
+                  No Android
+                  dependencies
 ```
 
 ### Key decisions
@@ -46,6 +107,11 @@ com.mx.beautypoke
 │   │   ├── api/
 │   │   ├── dto/
 │   │   └── mapper/
+│   ├── local           # Room database, DAOs, entities
+│   │   ├── dao/
+│   │   ├── database/
+│   │   ├── entity/
+│   │   └── mapper/
 │   └── repository/     # Repository implementations
 ├── domain
 │   ├── model/          # Domain entities
@@ -53,6 +119,7 @@ com.mx.beautypoke
 │   └── usecase/        # Business logic
 ├── di                  # Koin modules
 │   ├── NetworkModule.kt
+│   ├── DatabaseModule.kt
 │   ├── RepositoryModule.kt
 │   ├── UseCaseModule.kt
 │   └── ViewModelModule.kt
