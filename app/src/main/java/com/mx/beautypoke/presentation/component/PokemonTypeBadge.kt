@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 import com.mx.beautypoke.domain.model.PokemonColor
 import com.mx.beautypoke.domain.model.PokemonType
 
@@ -88,4 +89,19 @@ fun PokemonTypeBadge(
             }
         }
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1A1A2E)
+@Composable
+private fun PokemonTypeBadgeRoundedPreview() {
+    PokemonTypeBadge(type = PokemonType.FIRE)
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1A1A2E)
+@Composable
+private fun PokemonTypeBadgeCircularPreview() {
+    PokemonTypeBadge(
+        type = PokemonType.WATER,
+        style = PokemonTypeBadgeStyle.CIRCULAR
+    )
 }

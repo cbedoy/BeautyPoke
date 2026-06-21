@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 
 @Composable
@@ -56,4 +57,24 @@ fun MetricItem(
             )
         }
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF3A3A2E)
+@Composable
+private fun MetricItemWeightPreview() {
+    MetricItem(
+        icon = Icons.Filled.MonitorWeight,
+        label = "Weight",
+        value = "9.0 kg"
+    )
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF3A3A2E)
+@Composable
+private fun MetricItemHeightPreview() {
+    MetricItem(
+        icon = Icons.Filled.Straighten,
+        label = "Height",
+        value = "0.7 m"
+    )
 }

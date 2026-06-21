@@ -62,6 +62,7 @@ import com.mx.beautypoke.presentation.component.StatBar
 import com.mx.beautypoke.presentation.component.WeaknessPill
 import com.mx.beautypoke.presentation.theme.PokemonTheme
 import com.mx.beautypoke.presentation.theme.toTheme
+import androidx.compose.ui.tooling.preview.Preview
 import com.mx.beautypoke.presentation.viewmodel.PokemonDetailViewModel
 import kotlin.math.abs
 
@@ -457,6 +458,58 @@ private fun BackButton(
             tint = theme.onSurface
         )
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF4A2E1A)
+@Composable
+private fun PokemonDetailCardFirePreview() {
+    PokemonDetailCard(
+        pokemon = Pokemon(
+            id = 6,
+            name = "Charizard",
+            imageUrl = "",
+            types = listOf(PokemonType.FIRE, PokemonType.FLYING),
+            stats = listOf(
+                PokemonStat(name = "HP", value = 78),
+                PokemonStat(name = "Attack", value = 84),
+                PokemonStat(name = "Defense", value = 78),
+                PokemonStat(name = "Sp. Atk", value = 109),
+                PokemonStat(name = "Sp. Def", value = 85),
+                PokemonStat(name = "Speed", value = 100)
+            ),
+            height = 17,
+            weight = 905,
+            description = "Spits fire that is hot enough to melt boulders. Known to cause forest fires unintentionally.",
+            color = PokemonColor.RED,
+            category = "Flame Pokémon"
+        )
+    )
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1A2E4A)
+@Composable
+private fun PokemonDetailCardWaterPreview() {
+    PokemonDetailCard(
+        pokemon = Pokemon(
+            id = 9,
+            name = "Blastoise",
+            imageUrl = "",
+            types = listOf(PokemonType.WATER),
+            stats = listOf(
+                PokemonStat(name = "HP", value = 79),
+                PokemonStat(name = "Attack", value = 83),
+                PokemonStat(name = "Defense", value = 100),
+                PokemonStat(name = "Sp. Atk", value = 85),
+                PokemonStat(name = "Sp. Def", value = 105),
+                PokemonStat(name = "Speed", value = 78)
+            ),
+            height = 16,
+            weight = 855,
+            description = "It crushes its foe under its heavy body to cause fainting. In a pinch, it will withdraw inside its shell.",
+            color = PokemonColor.BLUE,
+            category = "Shellfish Pokémon"
+        )
+    )
 }
 
 @Composable

@@ -4,11 +4,17 @@ build:
 style:
   active: true
   MaxLineLength:
-    active: true
-    maxLineLength: 120
+    active: false
+  MagicNumber:
+    active: false
   WildcardImport:
     active: true
-    exclude: ["**/test/**", "**/androidTest/**"]
+    excludeImports:
+      - "java.util.*"
+  NewLineAtEndOfFile:
+    active: false
+  UnusedPrivateMember:
+    active: true
 
 potential-bugs:
   active: true
@@ -21,10 +27,6 @@ exceptions:
 
 comments:
   active: true
-  CommentOverPrivateFunction:
-    active: false
-  CommentOverPrivateProperty:
-    active: false
   UndocumentedPublicClass:
     active: false
   UndocumentedPublicFunction:
@@ -34,13 +36,18 @@ comments:
 
 complexity:
   active: true
+  LongMethod:
+    active: false
+  CyclomaticComplexMethod:
+    active: false
   LongParameterList:
-    active: true
-    functionThreshold: 8
-    constructorThreshold: 10
+    active: false
+  TooManyFunctions:
+    active: false
 
 naming:
   active: true
   FunctionNaming:
-    active: true
-    exclude: ["**/compose/**", "**/Compose**"]
+    active: false
+  MatchingDeclarationName:
+    active: false

@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 
 @Composable
@@ -28,5 +29,17 @@ fun InfoSection(
         )
         Spacer(modifier = Modifier.height(8.dp))
         content(Modifier)
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF3A3A2E)
+@Composable
+private fun InfoSectionPreview() {
+    InfoSection(title = "DESCRIPTION") {
+        androidx.compose.material3.Text(
+            text = "A sample description text for preview purposes.",
+            color = androidx.compose.ui.graphics.Color(0xFFE8DCF0).copy(alpha = 0.8f),
+            fontSize = 13.sp
+        )
     }
 }

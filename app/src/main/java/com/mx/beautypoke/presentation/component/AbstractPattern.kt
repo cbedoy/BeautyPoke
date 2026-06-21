@@ -1,11 +1,14 @@
 package com.mx.beautypoke.presentation.component
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.mx.beautypoke.domain.model.PokemonType
 import kotlin.math.cos
 import kotlin.math.sin
@@ -59,6 +62,46 @@ private fun DrawScope.drawRingPattern(color: Color) {
         val r = maxR * (0.3f + i * 0.15f)
         drawCircle(color = color, radius = r, center = Offset(cx, cy), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f))
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF4A2E1A)
+@Composable
+private fun AbstractPatternFirePreview() {
+    AbstractPattern(
+        type = PokemonType.FIRE,
+        modifier = Modifier.size(200.dp),
+        patternColor = Color.White.copy(alpha = 0.08f)
+    )
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF4A1A2E)
+@Composable
+private fun AbstractPatternPsychicPreview() {
+    AbstractPattern(
+        type = PokemonType.PSYCHIC,
+        modifier = Modifier.size(200.dp),
+        patternColor = Color.White.copy(alpha = 0.08f)
+    )
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1A1A2E)
+@Composable
+private fun AbstractPatternGhostPreview() {
+    AbstractPattern(
+        type = PokemonType.GHOST,
+        modifier = Modifier.size(200.dp),
+        patternColor = Color.White.copy(alpha = 0.08f)
+    )
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1E1A4A)
+@Composable
+private fun AbstractPatternDragonPreview() {
+    AbstractPattern(
+        type = PokemonType.DRAGON,
+        modifier = Modifier.size(200.dp),
+        patternColor = Color.White.copy(alpha = 0.08f)
+    )
 }
 
 private fun DrawScope.drawCirclePattern(color: Color) {

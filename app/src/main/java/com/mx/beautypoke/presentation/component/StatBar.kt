@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 import com.mx.beautypoke.domain.model.PokemonStat
 
 @Composable
@@ -77,4 +78,13 @@ fun StatBar(
             )
         }
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF3A3A2E)
+@Composable
+private fun StatBarPreview() {
+    StatBar(
+        stat = PokemonStat(name = "HP", value = 78),
+        barColor = Color(0xFFF08030)
+    )
 }
