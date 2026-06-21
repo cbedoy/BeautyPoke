@@ -3,7 +3,7 @@
 ## 1. Project Overview
 
 Android application following **MVVM + Clean Architecture + SOLID** principles.  
-Uses **Retrofit** for REST API consumption, **Use Cases** for business logic, **Koin** for DI, and **Jetpack Compose** for UI.
+Uses **Retrofit** for REST API consumption, **Use Cases** for business logic, **Koin** for DI, **Jetpack Compose** for UI, **kotlinx-serialization-json** for structured data serialization, and **kotlinx-datetime** for date/time handling.
 
 ## 2. Package Structure (Clean Architecture)
 
@@ -76,7 +76,9 @@ com.mx.beautypoke
 - DTO → Domain mapping via `PokemonMapper` in `data/remote/mapper/`.
 - Use `runCatching { }` in repository for error handling → `Result<T>`.
 - `OkHttpClient` with 15s connect/read timeouts.
-- Gson for JSON deserialization.
+- Gson for JSON deserialization (Retrofit + Room entity fields).
+- `kotlinx-serialization-json` is also available as an alternative serialization library (e.g., for `@Serializable` domain models).
+- `kotlinx-datetime` is available for date/time handling (e.g., cache freshness timestamps).
 
 ### Mapping rules
 | Domain field | API source | Notes |

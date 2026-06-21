@@ -13,6 +13,8 @@ Android application built with **MVVM + Clean Architecture + SOLID** principles.
 | Async | Kotlin Coroutines + Flow |
 | Navigation | Jetpack Navigation Compose |
 | Image Loading | Coil |
+| Serialization | kotlinx-serialization-json |
+| DateTime | kotlinx-datetime |
 
 ## Architecture Overview
 
@@ -140,6 +142,34 @@ com.mx.beautypoke
 ```bash
 ./gradlew installDebug
 ```
+
+## Dependencies
+
+| Category | Library | Version | Scope |
+|----------|---------|---------|-------|
+| **UI** | Jetpack Compose BOM | 2026.02.01 | implementation |
+| | Compose Material 3 | (via BOM) | implementation |
+| | Coil Compose | 2.7.0 | implementation |
+| | Navigation Compose | 2.8.9 | implementation |
+| **Architecture** | Lifecycle ViewModel Compose | 2.10.0 | implementation |
+| | Lifecycle Runtime KTX | 2.10.0 | implementation |
+| **Network** | Retrofit | 2.11.0 | implementation |
+| | Retrofit Gson Converter | 2.11.0 | implementation |
+| | OkHttp | 4.12.0 | implementation |
+| | Gson | 2.11.0 | implementation |
+| **Database** | Room Runtime | 2.7.1 | implementation |
+| | Room KTX | 2.7.1 | implementation |
+| | Room Compiler | 2.7.1 | annotationProcessor |
+| **DI** | Koin Core | 4.0.2 | implementation |
+| | Koin Android | 4.0.2 | implementation |
+| | Koin AndroidX Compose | 4.0.2 | implementation |
+| **Serialization** | kotlinx-serialization-json | 1.8.1 | implementation |
+| **DateTime** | kotlinx-datetime | 0.6.2 | implementation |
+| **Testing** | JUnit 4 | 4.13.2 | test |
+| | MockK | 1.13.14 | test, androidTest |
+| | Turbine | 1.2.0 | test |
+| | kotlinx-coroutines-test | 1.10.1 | test, androidTest |
+| | Compose UI Test | (via BOM) | androidTest |
 
 ## Commands
 
