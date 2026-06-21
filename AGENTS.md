@@ -167,7 +167,7 @@ Modules in `di/`:
 
 - `domain/` — pure unit tests (JUnit + MockK or Turbine for flows).
 - `data/` — unit tests with mocked Retrofit (MockWebServer).
-- `presentation/` — ViewModel tests with fake use cases; Compose UI tests.
+- `presentation/` — ViewModel tests with fake use cases; Compose UI tests; Paparazzi snapshot tests.
 
 ### Test dependencies
 
@@ -309,6 +309,33 @@ class PokemonDetailScreenTest {
 - Perform clicks with `.performClick()`.
 - Verify ViewModel interactions with `verify { mock.onRetry() }`.
 
+### Paparazzi snapshot test conventions
+
+```kotlin
+class PokemonDetailCardSnapshots {
+
+    @get:Rule
+    val paparazzi = Paparazzi(
+        deviceConfig = DeviceConfig.PIXEL_5,
+        theme = "android:Theme.Material.Light.NoActionBar"
+    )
+
+    @Test
+    fun myComponentSnapshot() {
+        paparazzi.snapshot {
+            MyComponent()
+        }
+    }
+}
+```
+
+**Key rules:**
+- Paparazzi tests go in `src/test/java/` (unit test source set).
+- Always use `PIXEL_5` device config for consistency.
+- Run `./gradlew :app:recordPaparazziDebug` to record golden PNGs.
+- Run `./gradlew :app:verifyPaparazziDebug` to verify against golden files.
+- Golden PNGs are stored in `src/test/snapshots/images/`.
+
 ### Test file location
 
 Tests mirror the source package structure under `src/test/java/` for unit tests and `src/androidTest/java/` for instrumented UI tests:
@@ -320,6 +347,7 @@ src/
 │   │   ├── local/mapper/PokemonEntityMapperTest.kt
 │   │   └── repository/PokemonRepositoryImplTest.kt
 │   └── presentation/
+│       ├── screen/PokemonDetailCardSnapshots.kt
 │       └── viewmodel/PokemonDetailViewModelTest.kt
 └── androidTest/java/com/mx/beautypoke/
     └── presentation/
@@ -376,7 +404,40 @@ If `ktlintCheck` or `detekt` fail, fix the issues before committing.
 - `format`: `./gradlew ktlintFormat && ./gradlew ktlintCheck && ./gradlew detekt`
 - `run`: Open project in Android Studio and run the `app` configuration.
 
-## 14. Git Workflow
+## 15. Design System
+
+The project has a small set of reusable Compose components. Every component **must** follow these conventions:
+
+### Component conventions
+
+1. **File location**: One component per file in `presentation/component/`.
+2. **Public API**: Default parameters for colors, sizes, and modifiers — composable must work with zero required params beyond `PokemonType` or data.
+3. **Dark surface support**: Every component that renders on dark card surfaces (`surface` from `PokemonTheme`) accepts an `onSurfaceColor: Color` parameter.
+4. **`@Preview` required**: Every component file must have at least one `@Preview`-annotated private composable showing a representative state. Previews must use `showBackground = true` with a dark surface color to match the app theme.
+5. **Paparazzi snapshot test required**: Every new component must have at least one snapshot test in `PokemonDetailCardSnapshots` or a dedicated test class under `src/test/java/`. Record with `./gradlew :app:recordPaparazziDebug`.
+
+### Available components
+
+| Component | File | Has `@Preview` | Has Paparazzi test |
+|-----------|------|----------------|--------------------|
+| `PokemonTypeBadge` | `PokemonTypeBadge.kt` | Yes (2) | Via `PokemonDetailCard` |
+| `StatBar` | `StatBar.kt` | Yes (1) | Via `PokemonDetailCard` |
+| `WeaknessPill` | `WeaknessPill.kt` | Yes (1) | Via `PokemonDetailCard` |
+| `MetricItem` | `MetricItem.kt` | Yes (2) | Via `PokemonDetailCard` |
+| `InfoSection` | `InfoSection.kt` | Yes (1) | Via `PokemonDetailCard` |
+| `AbstractPattern` | `AbstractPattern.kt` | Yes (4) | Via `PokemonDetailCard` |
+| `PokemonDetailCard` | `PokemonDetailScreen.kt` | Yes (2) | Yes (3 snapshots) |
+
+### Adding a new component
+
+1. Create the file in `presentation/component/`.
+2. Write the `@Composable` function with default params, dark surface support.
+3. Add at least one `@Preview` function (private, `showBackground = true`, dark background color).
+4. Add a Paparazzi test in `PokemonDetailCardSnapshots` (or a new test class).
+5. Run `./gradlew :app:recordPaparazziDebug` to generate golden PNGs.
+6. Update the Design System table in `README.md`.
+
+## 16. Git Workflow
 
 - Feature branches off `develop` or `main`.
 - Conventional commits: `feat:`, `fix:`, `refactor:`, `test:`, `docs:`.

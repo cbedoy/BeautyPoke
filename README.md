@@ -191,6 +191,170 @@ To regenerate:
 cp app/src/test/snapshots/images/*.png screenshots/
 ```
 
+## Design System
+
+A catalog of every UI component, its `@Preview`, Paparazzi snapshot reference, public API, and visual variants.
+
+### PokemonTypeBadge
+
+| Attribute | Value |
+|-----------|-------|
+| **File** | `presentation/component/PokemonTypeBadge.kt` |
+| **Purpose** | Displays a Pokémon type as a colored badge. Used in the detail screen header and type/category section. |
+| **Styles** | `PokemonTypeBadgeStyle.ROUNDED` — text-only pill. `PokemonTypeBadgeStyle.CIRCULAR` — dot + text pill. |
+| **Default params** | `containerColor` — auto-resolved from `PokemonType` at 20% alpha. `contentColor` — full hex color from `PokemonType`. |
+| **Preview** | `PokemonTypeBadgeRoundedPreview` (Fire, rounded), `PokemonTypeBadgeCircularPreview` (Water, circular) |
+| **Paparazzi test** | — (used inline in `PokemonDetailCardSnapshots`) |
+
+```kotlin
+@Composable
+fun PokemonTypeBadge(
+    type: PokemonType,
+    modifier: Modifier = Modifier,
+    style: PokemonTypeBadgeStyle = PokemonTypeBadgeStyle.ROUNDED,
+    containerColor: Color = Color(type.resolveColor().hex).copy(alpha = 0.2f),
+    contentColor: Color = Color(type.resolveColor().hex)
+)
+```
+
+### StatBar
+
+| Attribute | Value |
+|-----------|-------|
+| **File** | `presentation/component/StatBar.kt` |
+| **Purpose** | Animated horizontal progress bar for a base stat (HP, Attack, Defense, etc.). |
+| **Animation** | 800ms `tween` on `animateFloatAsState` — animates from 0 → target width. Can be disabled via `animated = false`. |
+| **Dark-panel compatible** | `onSurfaceColor` parameter for light text on dark surfaces. |
+| **Preview** | `StatBarPreview` (HP 78, Fire-theme bar) |
+| **Paparazzi test** | — (used inline in `PokemonDetailCardSnapshots`) |
+
+```kotlin
+@Composable
+fun StatBar(
+    stat: PokemonStat,
+    barColor: Color,
+    modifier: Modifier = Modifier,
+    onSurfaceColor: Color = Color(0xFFE8DCF0),
+    animated: Boolean = true
+)
+```
+
+### WeaknessPill
+
+| Attribute | Value |
+|-----------|-------|
+| **File** | `presentation/component/WeaknessPill.kt` |
+| **Purpose** | Small pill badge showing a type weakness. Used in a `FlowRow` inside the detail card. |
+| **Visual** | Colored dot + type name in a rounded pill, auto-resolved from `PokemonType.resolveColor()`. |
+| **Preview** | `WeaknessPillPreview` (Grass type) |
+| **Paparazzi test** | — (used inline in `PokemonDetailCardSnapshots`) |
+
+```kotlin
+@Composable
+fun WeaknessPill(
+    type: PokemonType,
+    modifier: Modifier = Modifier,
+    containerColor: Color = Color(type.resolveColor().hex).copy(alpha = 0.2f),
+    contentColor: Color = Color(type.resolveColor().hex)
+)
+```
+
+### MetricItem
+
+| Attribute | Value |
+|-----------|-------|
+| **File** | `presentation/component/MetricItem.kt` |
+| **Purpose** | Row with icon, bold value, and small label. Used for Weight and Height. |
+| **Icons** | `Icons.Filled.MonitorWeight` and `Icons.Filled.Straighten` in the screen, but any `ImageVector` is accepted. |
+| **Preview** | `MetricItemWeightPreview` (9.0 kg), `MetricItemHeightPreview` (0.7 m) |
+| **Paparazzi test** | — (used inline in `PokemonDetailCardSnapshots`) |
+
+```kotlin
+@Composable
+fun MetricItem(
+    icon: ImageVector,
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    onSurfaceColor: Color = Color(0xFFE8DCF0)
+)
+```
+
+### InfoSection
+
+| Attribute | Value |
+|-----------|-------|
+| **File** | `presentation/component/InfoSection.kt` |
+| **Purpose** | Wrapper with an uppercase section title + arbitrary content. Used for Description, Base Stats, Type & Category, Weaknesses, Weight & Height. |
+| **Content lambda** | `content: @Composable (Modifier) -> Unit` — receives a `Modifier` for padding, though currently unused. |
+| **Preview** | `InfoSectionPreview` (DESCRIPTION section with sample text) |
+| **Paparazzi test** | — (used inline in `PokemonDetailCardSnapshots`) |
+
+```kotlin
+@Composable
+fun InfoSection(
+    title: String,
+    modifier: Modifier = Modifier,
+    onSurfaceColor: Color = Color(0xFFE8DCF0),
+    content: @Composable (Modifier) -> Unit
+)
+```
+
+### AbstractPattern
+
+| Attribute | Value |
+|-----------|-------|
+| **File** | `presentation/component/AbstractPattern.kt` |
+| **Purpose** | Decorative Canvas pattern based on primary `PokemonType`. Rendered behind the Pokémon image in the header. |
+| **Pattern legend** | `PSYCHIC` → geometric circles in a ring. `GHOST` → overlapping smoke circles. `DRAGON` → concentric ring strokes. All others → dots in a hex arrangement. |
+| **Previews** | `AbstractPatternFirePreview` (dots), `AbstractPatternPsychicPreview` (geometric), `AbstractPatternGhostPreview` (smoke), `AbstractPatternDragonPreview` (rings) |
+| **Paparazzi test** | — (used inline in `PokemonDetailCardSnapshots`) |
+
+```kotlin
+@Composable
+fun AbstractPattern(
+    type: PokemonType,
+    modifier: Modifier = Modifier,
+    patternColor: Color = Color.White.copy(alpha = 0.08f)
+)
+```
+
+### PokemonDetailCard (Screen)
+
+| Attribute | Value |
+|-----------|-------|
+| **File** | `presentation/screen/PokemonDetailScreen.kt` |
+| **Purpose** | Scrollable single-card layout for a Pokémon. Combines all components above. |
+| **Layout** | `TopSection` (gradient + pattern + image + type badges) → `CurvedNameTransition` (name + index) → `InfoPanel` (description, stats, types, weaknesses, weight/height) |
+| **Previews** | `PokemonDetailCardFirePreview` (Charizard), `PokemonDetailCardWaterPreview` (Blastoise) |
+| **Paparazzi tests** | `charizardDetail`, `blastoiseDetail`, `gengarDetail` — golden files in `app/src/test/snapshots/images/` |
+| **Screenshots** | `screenshots/charizard-fs8.png`, `screenshots/blastoise-fs8.png`, `screenshots/gengar-fs8.png` |
+
+```kotlin
+@Composable
+fun PokemonDetailCard(pokemon: Pokemon)
+```
+
+### PokemonTheme (Design Tokens)
+
+| Attribute | Value |
+|-----------|-------|
+| **File** | `presentation/theme/PokemonTheme.kt` |
+| **Purpose** | Per-type color palette data class. Each `PokemonType` maps to a `PokemonTheme` via `PokemonType.toTheme()`. |
+| **Tokens** | `primary`, `secondary`, `surface`, `onSurface` — all `Color`. |
+| **Types** | All 18 Pokémon types have defined palettes (Normal, Fire, Water, Electric, Grass, Ice, Fighting, Poison, Ground, Flying, Psychic, Bug, Rock, Ghost, Dragon, Dark, Steel, Fairy). |
+
+```kotlin
+data class PokemonTheme(
+    val primary: Color,
+    val secondary: Color,
+    val surface: Color,
+    val onSurface: Color
+)
+
+fun PokemonType.toTheme(): PokemonTheme
+```
+
 ## Commands
 
 ```bash
