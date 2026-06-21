@@ -190,7 +190,7 @@ com.mx.beautypoke
 
 ## Credits
 
-- App icon and design by **Ivan Bedoy**.
+- App icon and design by **Carlos Bedoy**.
 - Built with [PokéAPI](https://pokeapi.co/) — free and open RESTful API for Pokémon data.
 - Inspired by the Pokémon franchise © The Pokémon Company, Nintendo, Game Freak.
 
