@@ -274,17 +274,58 @@ class PokemonEntityMapperTest {
 }
 ```
 
+### Compose UI test conventions (createComposeRule + MockK)
+
+```kotlin
+class PokemonDetailScreenTest {
+
+    @get:Rule
+    val composeTestRule = createComposeRule()
+
+    @Test
+    fun displaysPokemonName() {
+        val mock = mockk<PokemonDetailViewModel>(relaxed = true)
+        val stateFlow = MutableStateFlow(
+            PokemonCarouselUiState.Success(listOf(pokemon), 0)
+        ).asStateFlow()
+        every { mock.uiState } returns stateFlow
+
+        composeTestRule.setContent {
+            PokemonDetailScreen(viewModel = mock, onBackClick = {})
+        }
+
+        composeTestRule.onNodeWithText("Bulbasaur").assertExists()
+    }
+}
+```
+
+**Key rules:**
+- Use `createComposeRule()` as `@get:Rule` for Compose test environment.
+- Mock the ViewModel with `mockk<ViewModel>(relaxed = true)` and stub `uiState` with a `MutableStateFlow`.
+- Use `composeTestRule.setContent { }` to set the composable under test.
+- Assert with `onNodeWithText()`, `onNodeWithTag()`, `onNodeWithContentDescription()`.
+- Perform clicks with `.performClick()`.
+- Verify ViewModel interactions with `verify { mock.onRetry() }`.
+
 ### Test file location
 
-Tests mirror the source package structure under `src/test/java/`:
+Tests mirror the source package structure under `src/test/java/` for unit tests and `src/androidTest/java/` for instrumented UI tests:
 
 ```
-src/test/java/com/mx/beautypoke/
-├── data/
-│   ├── local/mapper/PokemonEntityMapperTest.kt
-│   └── repository/PokemonRepositoryImplTest.kt
-└── presentation/
-    └── viewmodel/PokemonDetailViewModelTest.kt
+src/
+├── test/java/com/mx/beautypoke/
+│   ├── data/
+│   │   ├── local/mapper/PokemonEntityMapperTest.kt
+│   │   └── repository/PokemonRepositoryImplTest.kt
+│   └── presentation/
+│       └── viewmodel/PokemonDetailViewModelTest.kt
+└── androidTest/java/com/mx/beautypoke/
+    └── presentation/
+        ├── component/
+        │   ├── PokemonTypeBadgeTest.kt
+        │   └── StatBarTest.kt
+        └── screen/
+            └── PokemonDetailScreenTest.kt
 ```
 
 ## 11. Build & Run
