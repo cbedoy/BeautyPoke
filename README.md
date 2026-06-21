@@ -15,6 +15,7 @@ Android application built with **MVVM + Clean Architecture + SOLID** principles.
 | Image Loading | Coil |
 | Serialization | kotlinx-serialization-json |
 | DateTime | kotlinx-datetime |
+| Code Quality | ktlint + detekt |
 
 ## Architecture Overview
 
@@ -165,6 +166,8 @@ com.mx.beautypoke
 | | Koin AndroidX Compose | 4.0.2 | implementation |
 | **Serialization** | kotlinx-serialization-json | 1.8.1 | implementation |
 | **DateTime** | kotlinx-datetime | 0.6.2 | implementation |
+| **Code Quality** | ktlint Gradle Plugin | 12.2.0 | plugin |
+| | detekt Gradle Plugin | 1.23.8 | plugin |
 | **Testing** | JUnit 4 | 4.13.2 | test |
 | | MockK | 1.13.14 | test, androidTest |
 | | Turbine | 1.2.0 | test |
@@ -176,8 +179,20 @@ com.mx.beautypoke
 ```bash
 ./gradlew assembleDebug   # Build debug APK
 ./gradlew test            # Run unit tests
-./gradlew lint            # Run lint checks
+./gradlew lint            # Run Android lint checks (Android SDK built-in)
+./gradlew ktlintCheck     # Run ktlint formatting checks
+./gradlew ktlintFormat    # Auto-format Kotlin code
+./gradlew detekt          # Run detekt static analysis
+./gradlew format          # Alias for ktlintFormat (optional)
 ```
+
+> **Note:** Always run `./gradlew ktlintFormat && ./gradlew ktlintCheck && ./gradlew detekt` before committing.
+
+## Credits
+
+- App icon and design by **Ivan Bedoy**.
+- Built with [PokéAPI](https://pokeapi.co/) — free and open RESTful API for Pokémon data.
+- Inspired by the Pokémon franchise © The Pokémon Company, Nintendo, Game Freak.
 
 ## License
 

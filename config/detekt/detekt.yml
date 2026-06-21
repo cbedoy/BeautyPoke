@@ -1,0 +1,46 @@
+build:
+  maxIssues: 50
+
+style:
+  active: true
+  MaxLineLength:
+    active: true
+    maxLineLength: 120
+  WildcardImport:
+    active: true
+    exclude: ["**/test/**", "**/androidTest/**"]
+
+potential-bugs:
+  active: true
+
+performance:
+  active: true
+
+exceptions:
+  active: true
+
+comments:
+  active: true
+  CommentOverPrivateFunction:
+    active: false
+  CommentOverPrivateProperty:
+    active: false
+  UndocumentedPublicClass:
+    active: false
+  UndocumentedPublicFunction:
+    active: false
+  UndocumentedPublicProperty:
+    active: false
+
+complexity:
+  active: true
+  LongParameterList:
+    active: true
+    functionThreshold: 8
+    constructorThreshold: 10
+
+naming:
+  active: true
+  FunctionNaming:
+    active: true
+    exclude: ["**/compose/**", "**/Compose**"]

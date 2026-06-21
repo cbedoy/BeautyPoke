@@ -3,7 +3,7 @@
 ## 1. Project Overview
 
 Android application following **MVVM + Clean Architecture + SOLID** principles.  
-Uses **Retrofit** for REST API consumption, **Use Cases** for business logic, **Koin** for DI, **Jetpack Compose** for UI, **kotlinx-serialization-json** for structured data serialization, and **kotlinx-datetime** for date/time handling.
+Uses **Retrofit** for REST API consumption, **Use Cases** for business logic, **Koin** for DI, **Jetpack Compose** for UI, **kotlinx-serialization-json** for structured data serialization, **kotlinx-datetime** for date/time handling, **ktlint** for code formatting, and **detekt** for static analysis.
 
 ## 2. Package Structure (Clean Architecture)
 
@@ -330,7 +330,34 @@ src/
             └── PokemonDetailScreenTest.kt
 ```
 
-## 11. Build & Run
+## 11. Code Quality
+
+### ktlint (code formatting)
+
+- Uses the `org.jlleitschuh.gradle.ktlint` plugin.
+- Follows Kotlin official style guide with 120-char max line length (configured in `.editorconfig`).
+- **Always run formatting before committing.** The agent MUST execute `./gradlew ktlintFormat` after making Kotlin code changes.
+
+### detekt (static analysis)
+
+- Uses the `io.gitlab.arturbosch.detekt` plugin.
+- Configuration in `config/detekt/detekt.yml`.
+- Max 50 issues allowed before build failure.
+- **Always run `./gradlew detekt` after making code changes.**
+
+### Agent formatting & lint mandate
+
+After every code change, the agent **MUST** run these commands in order:
+
+```bash
+./gradlew ktlintFormat  # Auto-format all Kotlin files
+./gradlew ktlintCheck   # Verify formatting is clean
+./gradlew detekt        # Run static analysis
+```
+
+If `ktlintCheck` or `detekt` fail, fix the issues before committing.
+
+## 12. Build & Run
 
 ```bash
 ./gradlew assembleDebug
@@ -338,15 +365,24 @@ src/
 ./gradlew connectedCheck
 ```
 
-## 12. Commands
+## 13. Commands
 
 - `install`: `./gradlew installDebug`
 - `lint`: `./gradlew lint`
 - `test`: `./gradlew test`
+- `ktlintCheck`: `./gradlew ktlintCheck`
+- `ktlintFormat`: `./gradlew ktlintFormat`
+- `detekt`: `./gradlew detekt`
+- `format`: `./gradlew ktlintFormat && ./gradlew ktlintCheck && ./gradlew detekt`
 - `run`: Open project in Android Studio and run the `app` configuration.
 
-## 13. Git Workflow
+## 14. Git Workflow
 
 - Feature branches off `develop` or `main`.
 - Conventional commits: `feat:`, `fix:`, `refactor:`, `test:`, `docs:`.
 - **Commit after every change**: each meaningful modification must be committed individually with a clear conventional message.
+- **Mandatory pre-commit steps for the agent:**
+  1. `./gradlew ktlintFormat` — auto-format
+  2. `./gradlew ktlintCheck` — verify no formatting violations
+  3. `./gradlew detekt` — verify no static analysis violations
+  4. If any step fails, fix the issues and re-run from step 1.
