@@ -167,6 +167,126 @@ Modules in `di/`:
 - `data/` — unit tests with mocked Retrofit (MockWebServer).
 - `presentation/` — ViewModel tests with fake use cases; Compose UI tests.
 
+### Test dependencies
+
+| Library | Version | Purpose |
+|---------|---------|---------|
+| JUnit 4 | 4.13.2 | Test runner & assertions |
+| MockK | 1.13.14 | Mocking (coEvery, coVerify, mockk) |
+| Turbine | 1.2.0 | StateFlow/Flow testing with `test {}` block |
+| kotlinx-coroutines-test | 1.10.1 | `runTest`, `StandardTestDispatcher`, `advanceUntilIdle` |
+
+### ViewModel test conventions (Turbine + StandardTestDispatcher)
+
+```kotlin
+class PokemonDetailViewModelTest {
+
+    private val testDispatcher = StandardTestDispatcher()
+
+    @Before
+    fun setUp() {
+        Dispatchers.setMain(testDispatcher)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
+    @Test
+    fun `test description`() = runTest(testDispatcher) {
+        val useCase = mockk<GetPokemonRangeUseCase>()
+        coEvery { useCase.invoke(any()) } returns Result.success(...)
+
+        val viewModel = PokemonDetailViewModel(useCase)
+
+        viewModel.uiState.test {
+            // 1. Initial state is always the first emission
+            assertEquals(PokemonCarouselUiState.Loading, awaitItem())
+
+            // 2. Advance all pending coroutines (init block, launches)
+            testDispatcher.scheduler.advanceUntilIdle()
+
+            // 3. Assert the next emission after all work completes
+            val success = awaitItem() as PokemonCarouselUiState.Success
+            assertEquals(expected, success.pokemonList.size)
+        }
+    }
+}
+```
+
+**Key rules:**
+- Use `StandardTestDispatcher` (not `UnconfinedTestDispatcher`) — enables explicit control with `advanceUntilIdle()`.
+- Call `Dispatchers.setMain(testDispatcher)` in `@Before` so `viewModelScope.launch` uses the test dispatcher.
+- Use `testDispatcher.scheduler.advanceUntilIdle()` inside the turbine `test {}` block after each state mutation.
+- Use `cancelAndIgnoreRemainingEvents()` at the end of the `test {}` block if prefetch coroutines produce extra emissions.
+- Import `com.mx.beautypoke.domain.model.*` for domain types in assertions.
+- Use `coEvery { ... }` for suspend function mocking, `coVerify` for verification.
+
+### Repository test conventions (MockK + cache-first)
+
+```kotlin
+class PokemonRepositoryImplTest {
+
+    private val api = mockk<PokemonApiService>()
+    private val dao = mockk<PokemonDao>()
+    private val repository = PokemonRepositoryImpl(api, dao)
+
+    @Test
+    fun `cache hit returns cached entity`() = runTest {
+        coEvery { dao.getById(1) } returns cachedEntity
+
+        val result = repository.getPokemonDetail(1)
+
+        assertTrue(result.isSuccess)
+        coVerify(exactly = 0) { api.getPokemon(any()) }
+        coVerify(exactly = 0) { api.getPokemonSpecies(any()) }
+    }
+
+    @Test
+    fun `cache miss fetches and persists`() = runTest {
+        coEvery { dao.getById(1) } returns null
+        coEvery { api.getPokemon(1) } returns pokemonResponse
+        coEvery { api.getPokemonSpecies(1) } returns speciesResponse
+        coEvery { dao.upsert(any()) } returns Unit
+
+        val result = repository.getPokemonDetail(1)
+
+        assertTrue(result.isSuccess)
+        coVerify(exactly = 1) { dao.upsert(any()) }
+    }
+}
+```
+
+### Entity mapper test conventions
+
+```kotlin
+class PokemonEntityMapperTest {
+
+    private val mapper = PokemonEntityMapper
+
+    @Test
+    fun `roundtrip preserves all data`() {
+        val entity = mapper.toEntity(original)
+        val result = mapper.toDomain(entity)
+        assertEquals(original, result)
+    }
+}
+```
+
+### Test file location
+
+Tests mirror the source package structure under `src/test/java/`:
+
+```
+src/test/java/com/mx/beautypoke/
+├── data/
+│   ├── local/mapper/PokemonEntityMapperTest.kt
+│   └── repository/PokemonRepositoryImplTest.kt
+└── presentation/
+    └── viewmodel/PokemonDetailViewModelTest.kt
+```
+
 ## 11. Build & Run
 
 ```bash
