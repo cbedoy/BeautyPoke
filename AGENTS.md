@@ -11,6 +11,7 @@ Uses **Retrofit** for REST API consumption, **Use Cases** for business logic, **
 com.mx.beautypoke
 ├── data
 │   ├── remote         # Retrofit services, DTOs, mappers
+│   ├── local          # Room entities, DAOs, database, entity mappers
 │   └── repository     # Repository implementations
 ├── domain
 │   ├── model          # Domain entities (Pokemon, PokemonType, PokemonColor, TypeWeaknesses)
@@ -29,6 +30,13 @@ com.mx.beautypoke
 - `presentation` → `domain` → `data`  
 - `domain` has **zero** dependencies on Android or `data` layer.
 
+### Room caching strategy
+- Repository implements **cache-first** logic: check Room → return cached entity, else fetch API → persist to Room → return.
+- `PokemonEntity` stores complex fields (`types`, `stats`) as JSON strings using Gson.
+- `PokemonColor` stored as enum `name` string, mapped back via `PokemonColor.valueOf()`.
+- DAO uses `@Upsert` (insert or update) for clean cache writes.
+- `BeautyPokeDatabase` provided via Koin `DatabaseModule`, requires `androidContext()` in `BeautyPokeApp`.
+
 ## 3. Architecture Rules
 
 ### MVVM
@@ -41,7 +49,7 @@ com.mx.beautypoke
 | Layer | Responsibility | Dependencies |
 |-------|----------------|--------------|
 | `domain` | Entities, repository interfaces, use cases | None |
-| `data` | API calls (Retrofit), DTO → domain mapping | domain |
+| `data` | API calls (Retrofit), DTO → domain mapping, Room caching | domain |
 | `presentation` | Compose screens, ViewModels, navigation | domain |
 | `di` | Wiring all layers with Koin | All layers |
 
@@ -146,11 +154,12 @@ PokemonDetailScreen
 Modules in `di/`:
 
 - `NetworkModule` — Retrofit, OkHttp, Gson, ApiService
+- `DatabaseModule` — Room database `BeautyPokeDatabase` and `PokemonDao`
 - `RepositoryModule` — binds `PokemonRepository` to `PokemonRepositoryImpl`
 - `UseCaseModule` — provides `GetPokemonDetailUseCase`
 - `ViewModelModule` — provides `PokemonDetailViewModel`
 
-`BeautyPokeApp` Application class initializes Koin with all modules.
+`BeautyPokeApp` Application class initializes Koin with all modules. Must call `androidContext(this@BeautyPokeApp)` before `modules()` because `DatabaseModule` requires a `Context`.
 
 ## 10. Testing
 

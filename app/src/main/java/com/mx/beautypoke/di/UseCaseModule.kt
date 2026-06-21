@@ -19,4 +19,4 @@ val viewModelModule = module {
     }
 }
 
-val appModules = listOf(networkModule, repositoryModule, useCaseModule, viewModelModule)
+val appModules = listOf(networkModule, databaseModule, repositoryModule, useCaseModule, viewModelModule)
