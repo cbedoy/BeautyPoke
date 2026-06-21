@@ -51,6 +51,8 @@ import androidx.compose.ui.util.lerp
 import coil.compose.AsyncImage
 import com.mx.beautypoke.domain.model.Pokemon
 import com.mx.beautypoke.domain.model.PokemonCarouselUiState
+import com.mx.beautypoke.domain.model.PokemonColor
+import com.mx.beautypoke.domain.model.PokemonStat
 import com.mx.beautypoke.domain.model.PokemonType
 import com.mx.beautypoke.domain.model.TypeWeaknesses
 import com.mx.beautypoke.presentation.component.AbstractPattern
